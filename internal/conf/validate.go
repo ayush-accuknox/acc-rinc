@@ -13,6 +13,9 @@ func (c C) Validate() error {
 	if err := validateLogFormat(c.Log.Format); err != nil {
 		return fmt.Errorf("`log.format`: %w", err)
 	}
+	if err := validateKubernetesClient(c.KubernetesClient); err != nil {
+		return fmt.Errorf("`kubernetesClient`: %w", err)
+	}
 	if err := validateRabbitMQ(c.RabbitMQ); err != nil {
 		return fmt.Errorf("rabbitmq: %w", err)
 	}
@@ -39,6 +42,13 @@ func validateLogFormat(format string) error {
 		return fmt.Errorf("invalid value for `log.format`: %q", format)
 	}
 	return nil
+}
+
+func validateKubernetesClient(c KubernetesClient) error {
+	if c.InCluster || c.Kubeconfig != "" {
+		return nil
+	}
+	return fmt.Errorf("either `inCluster` or `kubeconfig` must be set")
 }
 
 func validateRabbitMQ(rmq RabbitMQ) error {

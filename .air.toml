@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "bin"
 
 [build]
-  bin = "./bin/main --conf ./config.example.yaml"
+  bin = "./bin/main --conf ./config.yaml"
   cmd = "go build -o ./bin/main ./cmd/rinc"
   delay = 1000
   exclude_dir = ["bin", "static", "node_modules"]

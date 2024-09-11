@@ -32,3 +32,5 @@ result
 
 node_modules
 *_templ.txt
+/manifest
+/config.yaml

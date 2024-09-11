@@ -1,6 +1,21 @@
 log:
   level: "info"  # possible values: "debug", "info", "warn", "error"
   format: "text" # possible values: "text", "json"
+# path to the reports output directory
+output: "reports"
+kubernetesClient:
+  # inCluster, when set to true, attempts to authenticate with the API
+  # server using a service account token.
+  #
+  # Either `inCluster` must be set to true or the path to a kubeconfig
+  # file must be provided below.
+  inCluster: false
+  # Kubeconfig is the path to the `kubeconfig` file. This is useful when
+  # running the application outside the cluster.
+  #
+  # Either `inCluster` must be set to true or the path to a kubeconfig
+  # file must be provided here.
+  kubeconfig: ""
 rabbitmq:
   # enable rabbitmq metrics and stats in the reports.
   enable: false

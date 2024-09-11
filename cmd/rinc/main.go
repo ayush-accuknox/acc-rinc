@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/murtaza-u/rinc/internal/conf"
+	"github.com/murtaza-u/rinc/internal/job"
+	"github.com/murtaza-u/rinc/internal/kube"
 )
 
 func main() {
@@ -16,5 +20,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("validating provided config: %s", err.Error())
 	}
-	log.Println("Reporter IN Cluster")
+	kubeClient, err := kube.NewClient(conf.KubernetesClient)
+	if err != nil {
+		log.Fatalf("kubernetes client: %s", err.Error())
+	}
+	job := job.New(*conf, kubeClient)
+	err = job.GenerateAll(context.Background())
+	if err != nil {
+		log.Fatalf("generating reports: %s", err.Error())
+	}
+	time.Sleep(time.Minute * 10)
 }

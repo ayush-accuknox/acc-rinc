@@ -11,7 +11,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-var defaultConfig = "/etc/reporter/config.yaml"
+var defaultConfig = "/etc/rinc/config.yaml"
 
 // C contains all configuration data that can be passed to the reporter.
 type C struct {
@@ -19,6 +19,9 @@ type C struct {
 	Log Log `koanf:"log"`
 	// Output is the path to the reports output directory.
 	Output string `koanf:"output"`
+	// KubernetesClient contains the configuration needed to communicate with
+	// the Kubernetes API server.
+	KubernetesClient KubernetesClient `koanf:"kubernetesClient"`
 	// RabbitMQ contains the rabbitmq configuration.
 	RabbitMQ RabbitMQ `koanf:"rabbitmq"`
 }
@@ -31,6 +34,8 @@ func New(args ...string) (*C, error) {
 		"log.level":                    "info",
 		"log.format":                   "text",
 		"output":                       "reports",
+		"kubernetesClient.inCluster":   false,
+		"kubernetesClient.kubeconfig":  "",
 		"rabbitmq.enable":              false,
 		"rabbitmq.headlessSvcAddr":     "",
 		"rabbitmq.management.url":      "",
