@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
 	"github.com/murtaza-u/rinc/internal/conf"
 	"github.com/murtaza-u/rinc/internal/job"
 	"github.com/murtaza-u/rinc/internal/kube"
+	"github.com/murtaza-u/rinc/internal/web"
 )
 
 func main() {
@@ -20,14 +20,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("validating provided config: %s", err.Error())
 	}
-	kubeClient, err := kube.NewClient(conf.KubernetesClient)
-	if err != nil {
-		log.Fatalf("kubernetes client: %s", err.Error())
+
+	if conf.RunAsGenerator {
+		kubeClient, err := kube.NewClient(conf.KubernetesClient)
+		if err != nil {
+			log.Fatalf("kubernetes client: %s", err.Error())
+		}
+		job := job.New(*conf, kubeClient)
+		err = job.GenerateAll(context.Background())
+		if err != nil {
+			log.Fatalf("generating reports: %s", err.Error())
+		}
+		return
 	}
-	job := job.New(*conf, kubeClient)
-	err = job.GenerateAll(context.Background())
+
+	err = web.NewSrv(*conf).Run()
 	if err != nil {
-		log.Fatalf("generating reports: %s", err.Error())
+		log.Fatal(err)
 	}
-	time.Sleep(time.Minute * 10)
 }

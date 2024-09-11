@@ -15,6 +15,8 @@ var defaultConfig = "/etc/rinc/config.yaml"
 
 // C contains all configuration data that can be passed to the reporter.
 type C struct {
+	RunAsGenerator bool
+	RunAsWebServer bool
 	// Log contains configuration for logs.
 	Log Log `koanf:"log"`
 	// Output is the path to the reports output directory.
@@ -52,6 +54,16 @@ func New(args ...string) (*C, error) {
 		return nil, fmt.Errorf("failed to parse flags: %w", err)
 	}
 
+	asGenerator, err := f.GetBool("generate-reports")
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse flags: %w", err)
+	}
+
+	asWebServer, err := f.GetBool("serve")
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse flags: %w", err)
+	}
+
 	err = k.Load(file.Provider(confF), yaml.Parser())
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config file: %w", err)
@@ -63,6 +75,9 @@ func New(args ...string) (*C, error) {
 		return nil, fmt.Errorf("failed to unmarshal configuration: %w", err)
 	}
 
+	conf.RunAsGenerator = asGenerator
+	conf.RunAsWebServer = asWebServer
+
 	return conf, nil
 }
 
@@ -73,6 +88,8 @@ func parseFlags(args []string) *flag.FlagSet {
 		os.Exit(0)
 	}
 	f.String("conf", defaultConfig, "path to config file")
+	f.Bool("generate-reports", false, "generate reports")
+	f.Bool("serve", false, "serve static reports")
 	f.Parse(args)
 	return f
 }
