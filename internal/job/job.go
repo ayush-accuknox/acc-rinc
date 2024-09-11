@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/murtaza-u/rinc/internal/conf"
-	"github.com/murtaza-u/rinc/internal/report/rabbitmq"
-	"github.com/murtaza-u/rinc/internal/util"
-	"github.com/murtaza-u/rinc/view"
-	"github.com/murtaza-u/rinc/view/layout"
-	"github.com/murtaza-u/rinc/view/partial"
+	"github.com/accuknox/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/report/rabbitmq"
+	"github.com/accuknox/rinc/internal/util"
+	"github.com/accuknox/rinc/view"
+	"github.com/accuknox/rinc/view/layout"
+	"github.com/accuknox/rinc/view/partial"
 
 	"k8s.io/client-go/kubernetes"
 )

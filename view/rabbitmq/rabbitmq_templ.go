@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"time"
 
-	types "github.com/murtaza-u/rinc/types/rabbitmq"
-	"github.com/murtaza-u/rinc/view/icon"
+	types "github.com/accuknox/rinc/types/rabbitmq"
+	"github.com/accuknox/rinc/view/icon"
 )
 
 type Data struct {

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/murtaza-u/rinc/view"
-	"github.com/murtaza-u/rinc/view/layout"
+	"github.com/accuknox/rinc/view"
+	"github.com/accuknox/rinc/view/layout"
 
 	"github.com/labstack/echo/v4"
 )

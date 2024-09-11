@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/murtaza-u/rinc/internal/util"
+	"github.com/accuknox/rinc/internal/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

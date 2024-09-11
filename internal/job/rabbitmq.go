@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/murtaza-u/rinc/internal/report/rabbitmq"
-	"github.com/murtaza-u/rinc/internal/util"
+	"github.com/accuknox/rinc/internal/report/rabbitmq"
+	"github.com/accuknox/rinc/internal/util"
 )
 
 // GenerateRMQReport generates a RabbitMQ status and metrics report.

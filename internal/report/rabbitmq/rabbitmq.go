@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/murtaza-u/rinc/internal/conf"
-	"github.com/murtaza-u/rinc/internal/util"
-	"github.com/murtaza-u/rinc/view/layout"
-	"github.com/murtaza-u/rinc/view/partial"
-	tmpl "github.com/murtaza-u/rinc/view/rabbitmq"
+	"github.com/accuknox/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/util"
+	"github.com/accuknox/rinc/view/layout"
+	"github.com/accuknox/rinc/view/partial"
+	tmpl "github.com/accuknox/rinc/view/rabbitmq"
 
 	"k8s.io/client-go/kubernetes"
 )

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	types "github.com/murtaza-u/rinc/types/rabbitmq"
+	types "github.com/accuknox/rinc/types/rabbitmq"
 )
 
 // GetMetrics uses the RabbitMQ Management API to fetch relevant metrics for

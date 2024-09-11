@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/murtaza-u/rinc/internal/conf"
-	"github.com/murtaza-u/rinc/internal/job"
-	"github.com/murtaza-u/rinc/internal/kube"
-	"github.com/murtaza-u/rinc/internal/web"
+	"github.com/accuknox/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/job"
+	"github.com/accuknox/rinc/internal/kube"
+	"github.com/accuknox/rinc/internal/web"
 )
 
 func main() {

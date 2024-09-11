@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-import "github.com/murtaza-u/rinc/view/icon"
+import "github.com/accuknox/rinc/view/icon"
 
 type IndexStatus struct {
 	Name    string

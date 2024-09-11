@@ -13,7 +13,7 @@ import "bytes"
 import (
 	"time"
 
-	"github.com/murtaza-u/rinc/view/icon"
+	"github.com/accuknox/rinc/view/icon"
 
 	"github.com/xeonx/timeago"
 )

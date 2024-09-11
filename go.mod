@@ -1,4 +1,4 @@
-module github.com/murtaza-u/rinc
+module github.com/accuknox/rinc
 
 go 1.22.6
 

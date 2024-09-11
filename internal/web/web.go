@@ -12,8 +12,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/murtaza-u/rinc/internal/conf"
-	"github.com/murtaza-u/rinc/internal/util"
+	"github.com/accuknox/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/util"
 
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"

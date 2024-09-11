@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/murtaza-u/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/conf"
 )
 
 // IsosecLayout defines isosec timestamp.

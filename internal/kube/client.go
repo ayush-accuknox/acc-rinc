@@ -3,7 +3,7 @@ package kube
 import (
 	"fmt"
 
-	"github.com/murtaza-u/rinc/internal/conf"
+	"github.com/accuknox/rinc/internal/conf"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
