@@ -1,0 +1,66 @@
+package view
+
+import (
+	"time"
+
+	"github.com/murtaza-u/rinc/view/icon"
+
+	"github.com/xeonx/timeago"
+)
+
+templ HistoryForm() {
+	<form
+		hx-post="/history/search"
+		hx-target="#search-result"
+		hx-swap="outerHTML"
+		hx-indicator="#spinner"
+		class="px-3 lg:px-5 py-5 border-b-2 space-y-2 lg:space-x-2"
+	>
+		<input required name="date" type="date" class="input input-bordered w-full max-w-xs"/>
+		<button class="btn btn-outline">
+			Search
+			<span
+				id="spinner"
+				class="ml-1 hidden loading loading-spinner"
+			></span>
+		</button>
+	</form>
+	<div id="search-result"></div>
+}
+
+templ HistorySearchResultEmpty() {
+	<div id="search-result" class="px-3 lg:px-5 my-10">
+		<p class="text-center">No reports found</p>
+	</div>
+}
+
+type SearchResults struct {
+	ID                     string
+	Timestamp              time.Time
+	HumanReadableTimestamp string
+}
+
+templ HistorySearchResult(results []SearchResults) {
+	<div id="search-result" class="px-3 lg:px-5 my-10 bg-accent">
+		<ul>
+			for _, result := range results {
+				<li class="my-1 rounded-md shadow-sm bg-base-100 p-4">
+					<a
+						href={ templ.URL("/" + result.ID) }
+						class="flex space-x-2 justify-start items-center"
+					>
+						<span>
+							@icon.Clipboard(20)
+						</span>
+						<span class="text-blue-800">
+							{ result.HumanReadableTimestamp }
+						</span>
+						<span>
+							({ timeago.English.Format(result.Timestamp) })
+						</span>
+					</a>
+				</li>
+			}
+		</ul>
+	</div>
+}

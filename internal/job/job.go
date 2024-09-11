@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/murtaza-u/rinc/internal/conf"
+	"github.com/murtaza-u/rinc/internal/util"
 
 	"k8s.io/client-go/kubernetes"
 )
@@ -22,7 +23,7 @@ type Job struct {
 
 // New returns a new reporting Job object.
 func New(c conf.C, kubeClient *kubernetes.Clientset) Job {
-	slog.SetDefault(logger(c.Log))
+	slog.SetDefault(util.NewLogger(c.Log))
 	return Job{
 		conf:       c,
 		kubeClient: kubeClient,
@@ -60,23 +61,4 @@ func (j Job) initStamp(ctx context.Context, stamp string) error {
 		return fmt.Errorf("creating %q directory: %w", path, err)
 	}
 	return nil
-}
-
-func logger(c conf.Log) *slog.Logger {
-	var level slog.Level
-	switch c.Level {
-	case "debug":
-		level = slog.LevelDebug
-	case "warn":
-		level = slog.LevelWarn
-	case "error":
-		level = slog.LevelError
-	default:
-		level = slog.LevelInfo
-	}
-	opt := &slog.HandlerOptions{Level: level}
-	if c.Format == "json" {
-		return slog.New(slog.NewJSONHandler(os.Stderr, opt))
-	}
-	return slog.New(slog.NewTextHandler(os.Stderr, opt))
 }
