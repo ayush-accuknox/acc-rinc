@@ -113,7 +113,7 @@ func (j Job) GenerateIndex(ctx context.Context, now time.Time) error {
 
 	c := layout.Base(
 		fmt.Sprintf("%s | AccuKnox Reports", stamp),
-		partial.Navbar(false, false),
+		partial.Navbar(true, true),
 		view.Index(statuses),
 		partial.Footer(now),
 	)
