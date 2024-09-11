@@ -1,0 +1,20 @@
+log:
+  level: "info"  # possible values: "debug", "info", "warn", "error"
+  format: "text" # possible values: "text", "json"
+rabbitmq:
+  # enable rabbitmq metrics and stats in the reports.
+  enable: false
+  # kubernetes headless fqdn address pointing to rabbitmq nodes. On a DNS
+  # lookup, this address must resolve to rabbitmq node ips.
+  #
+  # For example: rabbitmq-nodes.default.svc.cluster.local
+  headlessSvcAddr: ""
+  management:
+    # rabbitmq management url.
+    #
+    # For example: http://rabbitmq.default.svc.cluster.local:15672
+    url: ""
+    # basic auth username for the management api.
+    username: ""
+    # basic auth password for the management api.
+    password: ""

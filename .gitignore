@@ -7,6 +7,7 @@
 *.dll
 *.so
 *.dylib
+bin
 
 # Test binary, built with `go test -c`
 *.test
@@ -28,3 +29,6 @@ go.work.sum
 .direnv
 .envrc
 result
+
+# node
+node_modules

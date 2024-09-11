@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "build": "tailwindcss build -o static/css/tailwind.css",
+    "watch": "tailwindcss build -o static/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "daisyui": "^4.12.10",
+    "tailwindcss": "^3.4.10"
+  }
+}
