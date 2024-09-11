@@ -1,0 +1,12 @@
+package partial
+
+import "time"
+
+templ Footer(generated time.Time) {
+	<footer class="p-1 text-center text-sm bottom-0 sticky">
+		Generated:
+		<strong>
+			{ generated.UTC().Format("2006-01-02 15:04:05") } UTC
+		</strong>
+	</footer>
+}

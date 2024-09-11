@@ -2,6 +2,9 @@
 export const content = ["./view/**/*.templ"];
 export const theme = {
   extend: {
+    backgroundImage: {
+      skulls: `url("/static/skulls.svg")`,
+    },
     fontFamily: {
       sans: ["Roboto", "sans-serif"],
       mono: ["Ubuntu Mono", "monospace"],

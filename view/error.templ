@@ -1,0 +1,20 @@
+package view
+
+import (
+	"fmt"
+	"net/http"
+)
+
+templ Error(err string, code int) {
+	<div class="hero bg-skulls min-h-screen">
+		<div class="hero-overlay bg-opacity-95 bg-base-100"></div>
+		<div class="hero-content text-center">
+			<div hx-boost="true" class="max-w-md">
+				<h1 class="mb-5 text-5xl font-bold">
+					{ fmt.Sprintf("Oops! - %s", http.StatusText(code)) }
+				</h1>
+				<p class="mb-5 text-md first-letter:uppercase">{ err }</p>
+			</div>
+		</div>
+	</div>
+}

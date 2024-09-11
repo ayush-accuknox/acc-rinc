@@ -3,6 +3,7 @@ module github.com/murtaza-u/rinc
 go 1.22.6
 
 require (
+	github.com/a-h/templ v0.2.778
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/providers/confmap v0.1.0
 	github.com/knadh/koanf/providers/file v1.1.0

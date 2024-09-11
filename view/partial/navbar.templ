@@ -1,0 +1,25 @@
+package partial
+
+templ Navbar(showLinks, roundedBottom bool) {
+	<header>
+		<nav
+			class={
+				"navbar bg-base-100 px-4",
+				templ.KV("rounded-b-lg", roundedBottom),
+				templ.KV("shadow-lg", roundedBottom),
+				templ.KV("border-b-2", roundedBottom),
+			}
+		>
+			<div class="flex-1">
+				<a href="/" class="text-xl font-bold">
+					<img class="w-36" src="/static/accuknox-logo.svg" alt="AccuKnox Logo"/>
+				</a>
+			</div>
+			if showLinks {
+				<div class="flex-none">
+					<a href="/history">History</a>
+				</div>
+			}
+		</nav>
+	</header>
+}
