@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
@@ -19,6 +20,10 @@ type C struct {
 	RunAsWebServer bool
 	// Log contains configuration for logs.
 	Log Log `koanf:"log"`
+	// TerminationGracePeriod is the period after which the web server
+	// must be forcefully terminated. A value of 0 implies no forceful
+	// termination.
+	TerminationGracePeriod time.Duration `koanf:"terminationGracePeriod"`
 	// Output is the path to the reports output directory.
 	Output string `koanf:"output"`
 	// KubernetesClient contains the configuration needed to communicate with
@@ -36,6 +41,7 @@ func New(args ...string) (*C, error) {
 		"log.level":                    "info",
 		"log.format":                   "text",
 		"output":                       "reports",
+		"terminationGracePeriod":       time.Second * 10,
 		"kubernetesClient.inCluster":   false,
 		"kubernetesClient.kubeconfig":  "",
 		"rabbitmq.enable":              false,

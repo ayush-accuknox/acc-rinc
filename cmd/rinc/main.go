@@ -34,8 +34,5 @@ func main() {
 		return
 	}
 
-	err = web.NewSrv(*conf).Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	web.NewSrv(*conf).Run(context.Background())
 }

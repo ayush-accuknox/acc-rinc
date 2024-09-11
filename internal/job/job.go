@@ -37,6 +37,7 @@ func New(c conf.C, kubeClient *kubernetes.Clientset) Job {
 // GenerateAll generates reports for all the configured tasks.
 func (j Job) GenerateAll(ctx context.Context) error {
 	now := time.Now().UTC()
+	stamp := now.Format(util.IsosecLayout)
 
 	err := j.GenerateIndex(ctx, now)
 	if err != nil {
@@ -48,6 +49,12 @@ func (j Job) GenerateAll(ctx context.Context) error {
 		)
 		return fmt.Errorf("failed to generate index page: %w", err)
 	}
+	slog.LogAttrs(
+		ctx,
+		slog.LevelInfo,
+		"generated index.html",
+		slog.String("stamp", stamp),
+	)
 
 	if j.conf.RabbitMQ.Enable {
 		err := j.GenerateRMQReport(ctx, now)
@@ -60,6 +67,12 @@ func (j Job) GenerateAll(ctx context.Context) error {
 			)
 			return fmt.Errorf("generating RMQ report: %w", err)
 		}
+		slog.LogAttrs(
+			ctx,
+			slog.LevelInfo,
+			"generated rabbitmq.html",
+			slog.String("stamp", stamp),
+		)
 	}
 
 	return nil
