@@ -1,0 +1,211 @@
+package rabbitmq
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/murtaza-u/rinc/view/icon"
+	types "github.com/murtaza-u/rinc/types/rabbitmq"
+)
+
+type Data struct {
+	Timestamp time.Time
+	IsHealthy bool
+	Metrics   types.Metrics
+}
+
+templ Report(data Data) {
+	@heading(data.Timestamp, data.IsHealthy)
+	if data.IsHealthy {
+		@summary(data.Metrics.Overview)
+		@nodes(data.Metrics.Nodes)
+		@queues(data.Metrics.Queues)
+		@consumers(data.Metrics.Consumers)
+		@exchanges(data.Metrics.Exchanges)
+	}
+}
+
+templ heading(stamp time.Time, healthy bool) {
+	<h1 class="text-3xl font-bold flex items-center justify-center gap-2 my-5">
+		if healthy {
+			<span class="text-green-700">
+				@icon.Check()
+			</span>
+		} else {
+			<span class="text-red-700">
+				@icon.Cross()
+			</span>
+		}
+		RabbitMQ ({ stamp.UTC().Format("2006-01-02 15:04:05") } UTC)
+	</h1>
+}
+
+templ summary(data types.Overview) {
+	<section class="px-3 lg:px-5 mb-5">
+		<h2 class="text-xl font-bold mb-2">Summary</h2>
+		<table>
+			<tbody>
+				<tr>
+					<th>Total messages in Queues</th>
+					<td>{ fmt.Sprintf("%d", data.QueueTotals.Messages) }</td>
+				</tr>
+				<tr>
+					<th>Unacknowledged messages in Queues</th>
+					<td>{ fmt.Sprintf("%d", data.QueueTotals.UnacknowledgedMessages) }</td>
+				</tr>
+				<tr>
+					<th>Ready messages in Queues</th>
+					<td>{ fmt.Sprintf("%d", data.QueueTotals.ReadyMessages) }</td>
+				</tr>
+				<tr>
+					<th>RabbitMQ Version</th>
+					<td>{ data.Version }</td>
+				</tr>
+				<tr>
+					<th>Total channels</th>
+					<td>{ fmt.Sprintf("%d", data.ObjectTotals.Channels) }</td>
+				</tr>
+				<tr>
+					<th>Total connections</th>
+					<td>{ fmt.Sprintf("%d", data.ObjectTotals.Connections) }</td>
+				</tr>
+				<tr>
+					<th>Total consumers</th>
+					<td>{ fmt.Sprintf("%d", data.ObjectTotals.Consumers) }</td>
+				</tr>
+				<tr>
+					<th>Total exchanges</th>
+					<td>{ fmt.Sprintf("%d", data.ObjectTotals.Exchanges) }</td>
+				</tr>
+				<tr>
+					<th>Total queues</th>
+					<td>{ fmt.Sprintf("%d", data.ObjectTotals.Queues) }</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+}
+
+templ nodes(nodes types.Nodes) {
+	<section class="px-3 lg:px-5 mb-5">
+		<h2 class="text-xl font-bold mb-2">Nodes</h2>
+		<table class="full-width-table">
+			<thead>
+				<th>Name</th>
+				<th>Running</th>
+				<th>CPU</th>
+				<th>Mem Used</th>
+				<th>Free Disk</th>
+				<th>Processes</th>
+				<th>Sockets</th>
+				<th>FD Used</th>
+				<th>Uptime</th>
+				<th>Plugins</th>
+			</thead>
+			<tbody>
+				for _, node := range nodes {
+					<tr>
+						<td>{ node.Name }</td>
+						<td>{ fmt.Sprintf("%v", node.Running) }</td>
+						<td>{ fmt.Sprintf("%d", node.CPUCount) }</td>
+						<td>{ fmt.Sprintf("%.2f", node.MemUsed * 9.536743e-7) }MiB</td>
+						<td>{ fmt.Sprintf("%.2f", node.FreeDisk * 9.313226e-10) }GiB</td>
+						<td>{ fmt.Sprintf("%d", node.ProcUsed) }</td>
+						<td>{ fmt.Sprintf("%d", node.SocketsUsed) }</td>
+						<td>{ fmt.Sprintf("%d", node.FDUsed) }</td>
+						<td>{ toDuration(node.Uptime).Round(time.Second).String() }</td>
+						<td>
+							<ul>
+								for _, plugin := range node.EnabledPlugins {
+									<li>{ plugin }</li>
+								}
+							</ul>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</section>
+}
+
+templ queues(queues types.Queues) {
+	<section class="px-3 lg:px-5 mb-5">
+		<h2 class="text-xl font-bold mb-2">Queues</h2>
+		<table class="full-width-table">
+			<thead>
+				<th>Name</th>
+				<th>State</th>
+				<th>Messages</th>
+				<th>Unacknowledged Messages</th>
+				<th>Ready Messages</th>
+				<th>Durable</th>
+			</thead>
+			<tbody>
+				for _, queue := range queues {
+					<tr>
+						<td>{ queue.Name }</td>
+						<td>{ queue.State }</td>
+						<td>{ fmt.Sprintf("%d", queue.Messages) }</td>
+						<td>{ fmt.Sprintf("%d", queue.UnacknowledgedMessages) }</td>
+						<td>{ fmt.Sprintf("%d", queue.ReadyMessages) }</td>
+						<td>{ fmt.Sprintf("%v", queue.Durable) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</section>
+}
+
+templ consumers(consumers types.Consumers) {
+	<section class="px-3 lg:px-5 mb-5">
+		<h2 class="text-xl font-bold mb-2">Consumers</h2>
+		<table class="full-width-table">
+			<thead>
+				<th>Tag</th>
+				<th>Active</th>
+				<th>Queue</th>
+				<th>Prefetch Count</th>
+			</thead>
+			<tbody>
+				for _, consumer := range consumers {
+					<tr>
+						<td>{ consumer.Tag }</td>
+						<td>{ fmt.Sprintf("%v", consumer.Active) }</td>
+						<td>{ consumer.Queue.Name }</td>
+						<td>{ fmt.Sprintf("%d", consumer.PrefetchCount) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</section>
+}
+
+templ exchanges(exchanges types.Exchanges) {
+	<section class="px-3 lg:px-5 mb-5">
+		<h2 class="text-xl font-bold mb-2">Exchanges</h2>
+		<table class="full-width-table">
+			<thead>
+				<th>Name</th>
+				<th>Type</th>
+				<th>Durable</th>
+			</thead>
+			<tbody>
+				for _, exchange := range exchanges {
+					<tr>
+						<td>{ exchange.Name }</td>
+						<td>{ exchange.Typ }</td>
+						<td>{ fmt.Sprintf("%v", exchange.Durable) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</section>
+}
+
+func toDuration(ms uint64) time.Duration {
+	dur, err := time.ParseDuration(fmt.Sprintf("%dms", ms))
+	if err != nil {
+		return 0
+	}
+	return dur
+}

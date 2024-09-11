@@ -1,14 +1,5 @@
 package rabbitmq
 
-const (
-	healthCheckEndpoint = "/api/health/checks/virtual-hosts"
-	overviewEndpoint    = "/api/overview"
-	nodesEndpoint       = "/api/nodes"
-	queuesEndpoint      = "/api/queues"
-	exchangesEndpoint   = "/api/exchanges"
-	consumersEndpoint   = "/api/consumers"
-)
-
 // Metrics contains a set of important RabbitMQ metrics that need to be
 // included in the report.
 type Metrics struct {

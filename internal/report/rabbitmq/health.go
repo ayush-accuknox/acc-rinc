@@ -36,7 +36,7 @@ func (r Reporter) IsClusterUp(ctx context.Context) (bool, error) {
 		ctx,
 		slog.LevelDebug,
 		"rabbitmq namespace",
-		slog.Any("namespace", ns),
+		slog.String("namespace", ns),
 	)
 
 	pods, err := r.kubeClient.CoreV1().Pods(ns).List(ctx, metav1.ListOptions{})
