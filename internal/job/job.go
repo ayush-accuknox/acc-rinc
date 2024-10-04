@@ -132,6 +132,25 @@ func (j Job) GenerateAll(ctx context.Context) error {
 		)
 	}
 
+	if j.conf.Ceph.Enable {
+		err := j.GenerateCEPHReport(ctx, now)
+		if err != nil {
+			slog.LogAttrs(
+				ctx,
+				slog.LevelError,
+				"generating ceph status report",
+				slog.String("error", err.Error()),
+			)
+			return fmt.Errorf("generating ceph status report: %w", err)
+		}
+		slog.LogAttrs(
+			ctx,
+			slog.LevelInfo,
+			"generated ceph.html",
+			slog.String("stamp", stamp),
+		)
+	}
+
 	return nil
 }
 
@@ -180,6 +199,14 @@ func (j Job) GenerateIndex(ctx context.Context, now time.Time) error {
 		statuses = append(statuses, view.IndexStatus{
 			Name: "Deployment & Statefulset Status",
 			Slug: "deployment-statefulset-status",
+			ID:   stamp,
+		})
+	}
+
+	if j.conf.Ceph.Enable {
+		statuses = append(statuses, view.IndexStatus{
+			Name: "CEPH",
+			Slug: "ceph",
 			ID:   stamp,
 		})
 	}

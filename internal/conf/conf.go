@@ -40,6 +40,8 @@ type C struct {
 	// DaSS contains configuration related to the deployment and statefulset
 	// status reporter.
 	DaSS DaSS `koanf:"deploymentAndStatefulsetStatus"`
+	// Ceph contains configuration related to the ceph status reporter.
+	Ceph Ceph `koanf:"ceph"`
 }
 
 // New creates a configuration using the provided arguments and config file.
