@@ -40,16 +40,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- end }}
 {{- end }}
 
-{{- define "pvc.name" -}}
-  {{- if .Values.persistentVolumeClaim.fullnameOverride }}
-    {{- .Values.persistentVolumeClaim.fullnameOverride | trunc 63 | trimSuffix "-" }}
-  {{- else if .Values.persistentVolumeClaim.nameOverride }}
-    {{- printf "%s-%s" .Chart.Name .Values.persistentVolumeClaim.nameOverride | trunc 63 | trimSuffix "-" }}
-  {{- else }}
-    {{- printf "%s-pvc" .Chart.Name | trunc 63 | trimSuffix "-" }}
-  {{- end }}
-{{- end }}
-
 {{- define "cronjob.name" -}}
   {{- if .Values.reportingCronJob.fullnameOverride }}
     {{- .Values.reportingCronJob.fullnameOverride | trunc 63 | trimSuffix "-" }}
@@ -87,5 +77,27 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{- printf "%s-%s" .Chart.Name .Values.rbac.clusterRoleBinding.nameOverride | trunc 63 | trimSuffix "-" }}
   {{- else }}
     {{- .Chart.Name | trunc 63 | trimSuffix "-" }}
+  {{- end }}
+{{- end }}
+
+{{- define "secret.name" -}}
+  {{- if .Values.existingSecret.name }}
+    {{- .Values.existingSecret.name }}
+  {{- else if .Values.secretConfig.create }}
+    {{- if .Values.secretConfig.fullnameOverride }}
+      {{- .Values.secretConfig.fullnameOverride | trunc 63 | trimSuffix "-" }}
+    {{- else if .Values.secretConfig.nameOverride }}
+      {{- printf "%s-%s" .Chart.Name .Values.secretConfig.nameOverride | trunc 63 | trimSuffix "-" }}
+    {{- else }}
+      {{- .Chart.Name | trunc 63 | trimSuffix "-" }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- define "secret.key" -}}
+  {{- if .Values.existingSecret.name }}
+    {{- .Values.existingSecret.key }}
+  {{- else if .Values.secretConfig.create }}
+    {{- printf "secret.yaml" }}
   {{- end }}
 {{- end }}

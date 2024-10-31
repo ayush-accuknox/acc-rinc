@@ -3,7 +3,7 @@ image:
   repository: 956994857092.dkr.ecr.us-east-2.amazonaws.com/accuknox-rinc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "v0.3.1"
 
 imagePullSecrets: []
 
@@ -18,17 +18,6 @@ podSecurityContext:
 securityContext:
   allowPrivilegeEscalation: false
   privileged: false
-
-persistentVolumeClaim:
-  nameOverride: ""
-  fullnameOverride: ""
-  spec:
-    # storageClassName: ""
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 5Gi
 
 web:
   nameOverride: ""
@@ -63,8 +52,6 @@ web:
     #   cpu: 100m
     #   memory: 128Mi
   additionalLabels: {}
-  additionalVolumes: []
-  additionalVolumeMounts: []
 
 reportingCronJob:
   nameOverride: ""
@@ -85,8 +72,6 @@ reportingCronJob:
   affinity: {}
   tolerations: []
   additionalLabels: {}
-  additionalVolumes: []
-  additionalVolumeMounts: []
 
 rbac:
   serviceAccount:
@@ -103,8 +88,8 @@ config:
   log:
     level: "info"  # possible values: "debug", "info", "warn", "error"
     format: "text" # possible values: "text", "json"
-  # path to the reports output directory
-  output: "/data/reports"
+  mongodb:
+    uri: ""
   rabbitmq:
     # enable rabbitmq metrics and stats in the reports.
     enable: false
@@ -118,10 +103,6 @@ config:
       #
       # For example: http://rabbitmq.default.svc.cluster.local:15672
       url: ""
-      # basic auth username for the management api.
-      username: ""
-      # basic auth password for the management api.
-      password: ""
   longRunningJobs:
     # enable long-running jobs reporting
     enable: false
@@ -155,7 +136,31 @@ config:
       #
       # For example: https://rook-ceph-mgr-dashboard.rook-ceph.svc.cluster.local:8443
       url: ""
-      # username to authenticate with ceph dashboard API.
+
+existingSecret:
+  name: ""
+  key: ""
+
+# Will have no effect if `existingSecret.name` is set.
+secretConfig:
+  create: false
+  nameOverride: ""
+  fullnameOverride: ""
+  config:
+    mongodb:
       username: ""
-      # password to authenticate with ceph dashboard API.
       password: ""
+    rabbitmq:
+      management:
+        # basic auth username for the management api.
+        username: ""
+        # basic auth password for the management api.
+        password: ""
+    ceph:
+      # ceph reporter uses ceph's dashboard API to scrape ceph status and
+      # metrics.
+      dashboardAPI:
+        # username to authenticate with ceph dashboard API.
+        username: ""
+        # password to authenticate with ceph dashboard API.
+        password: ""

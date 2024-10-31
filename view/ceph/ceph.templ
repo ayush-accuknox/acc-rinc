@@ -1,4 +1,4 @@
-package rabbitmq
+package ceph
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/accuknox/rinc/view/icon"
 	types "github.com/accuknox/rinc/types/ceph"
+	"github.com/accuknox/rinc/internal/db"
+	"github.com/accuknox/rinc/view/partial"
 )
 
 const (
@@ -16,24 +18,15 @@ const (
 	HealthCrit = "HEALTH_CRIT"
 )
 
-type Data struct {
-	Timestamp   time.Time
-	Version     string
-	Status      types.Status
-	Hosts       []types.Host
-	Devices     []types.Device
-	Inventories []types.Inventory
-	Buckets     []types.Bucket
-}
-
-templ Report(data Data) {
-	@heading(data.Timestamp, data.Status.Health.Status)
-	@health(data.Status.Health)
-	@stats(data.Status, data.Version, len(data.Buckets))
-	@hosts(data.Hosts)
-	@inventory(data.Inventories)
-	@devices(data.Devices)
-	@buckets(data.Buckets)
+templ Report(metrics types.Metrics, alerts []db.Alert) {
+	@heading(metrics.Timestamp, metrics.Status.Health.Status)
+	@partial.Alerts(alerts)
+	@health(metrics.Status.Health)
+	@stats(metrics.Status, metrics.Summary.Version, len(metrics.Buckets))
+	@hosts(metrics.Hosts)
+	@inventory(metrics.Inventories)
+	@devices(metrics.Devices)
+	@buckets(metrics.Buckets)
 }
 
 templ indicator(status string, size ...int) {

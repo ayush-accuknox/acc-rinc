@@ -3,27 +3,16 @@ package longjobs
 import (
 	"fmt"
 	"time"
+
+	types "github.com/accuknox/rinc/types/longjobs"
+	"github.com/accuknox/rinc/internal/db"
+	"github.com/accuknox/rinc/view/partial"
 )
 
-type Data struct {
-	Timestamp time.Time
-	OlderThan time.Duration
-	Jobs      []Job
-}
-
-type Job struct {
-	Name       string
-	Namespace  string
-	Suspended  bool
-	ActivePods int32
-	FailedPods int32
-	ReadyPods  int32
-	Age        time.Duration
-}
-
-templ Report(data Data) {
-	@heading(data.Timestamp)
-	@jobs(data.Jobs, data.OlderThan)
+templ Report(metrics types.Metrics, alerts []db.Alert) {
+	@heading(metrics.Timestamp)
+	@partial.Alerts(alerts)
+	@jobs(metrics.Jobs, metrics.OlderThan)
 }
 
 templ heading(stamp time.Time) {
@@ -32,7 +21,7 @@ templ heading(stamp time.Time) {
 	</h1>
 }
 
-templ jobs(jobs []Job, olderThan time.Duration) {
+templ jobs(jobs []types.Job, olderThan time.Duration) {
 	<section class="px-3 lg:px-5 mb-5">
 		<p class="font-mono mb-2">
 			* Following jobs are older than { olderThan.String() }
@@ -46,6 +35,7 @@ templ jobs(jobs []Job, olderThan time.Duration) {
 				<th>Failed Pods</th>
 				<th>Ready Pods</th>
 				<th>Age</th>
+				<th>Pods</th>
 			</thead>
 			<tbody>
 				for _, job := range jobs {
@@ -57,6 +47,50 @@ templ jobs(jobs []Job, olderThan time.Duration) {
 						<td>{ fmt.Sprintf("%d", job.FailedPods) }</td>
 						<td>{ fmt.Sprintf("%d", job.ReadyPods) }</td>
 						<td>{ job.Age.Round(time.Second).String() }</td>
+						<td>
+							<table class="full-width-table nested-table">
+								<thead>
+									<th>Name</th>
+									<th>Phase</th>
+									<th>Reason</th>
+									<th>Containers</th>
+								</thead>
+								<tbody>
+									for _, pod := range job.Pods {
+										<tr>
+											<td>{ pod.Name }</td>
+											<td>{ pod.Phase }</td>
+											<td>{ pod.Reason }</td>
+											<td>
+												<table class="full-width-table nested-table">
+													<thead>
+														<th>Name</th>
+														<th>Ready</th>
+														<th>State</th>
+														<th>Restart Count</th>
+													</thead>
+													<tbody>
+														for _, c := range pod.Containers {
+															<tr>
+																<td>
+																	{ c.Name }
+																	if c.IsInit {
+																		(init)
+																	}
+																</td>
+																<td>{ fmt.Sprintf("%v", c.Ready) }</td>
+																<td>{ c.State }</td>
+																<td>{ fmt.Sprintf("%d", c.RestartCount) }</td>
+															</tr>
+														}
+													</tbody>
+												</table>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</td>
 					</tr>
 				}
 			</tbody>

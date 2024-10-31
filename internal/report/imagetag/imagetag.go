@@ -3,15 +3,15 @@ package imagetag
 import (
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"time"
 
 	"github.com/accuknox/rinc/internal/conf"
-	"github.com/accuknox/rinc/internal/util"
-	tmpl "github.com/accuknox/rinc/view/imagetag"
-	"github.com/accuknox/rinc/view/layout"
-	"github.com/accuknox/rinc/view/partial"
+	"github.com/accuknox/rinc/internal/db"
+	"github.com/accuknox/rinc/internal/report"
+	types "github.com/accuknox/rinc/types/imagetag"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -21,20 +21,22 @@ import (
 type Reporter struct {
 	kubeClient *kubernetes.Clientset
 	conf       conf.ImageTag
+	mongo      *mongo.Client
 }
 
 // NewReporter creates a new image tag reporter.
-func NewReporter(c conf.ImageTag, kubeClient *kubernetes.Clientset) Reporter {
+func NewReporter(c conf.ImageTag, k *kubernetes.Clientset, mongo *mongo.Client) Reporter {
 	return Reporter{
 		conf:       c,
-		kubeClient: kubeClient,
+		kubeClient: k,
+		mongo:      mongo,
 	}
 }
 
 // Report satisfies the report.Reporter interface by fetching the image tags of
 // deployments and statefulsets from the Kubernetes API server, and writes the
-// report to the provided io.Writer.
-func (r Reporter) Report(ctx context.Context, to io.Writer, now time.Time) error {
+// report to the database.
+func (r Reporter) Report(ctx context.Context, now time.Time) error {
 	depls, err := r.deployments(ctx)
 	if err != nil {
 		slog.LogAttrs(
@@ -57,32 +59,63 @@ func (r Reporter) Report(ctx context.Context, to io.Writer, now time.Time) error
 		return fmt.Errorf("fetching statefulsets: %w", err)
 	}
 
-	stamp := now.Format(util.IsosecLayout)
-	c := layout.Base(
-		fmt.Sprintf("Image Tags - %s | AccuKnox Reports", stamp),
-		partial.Navbar(false, false),
-		tmpl.Report(tmpl.Data{
-			Timestamp:    now,
-			Deployments:  depls,
-			Statefulsets: statefulsets,
-		}),
-	)
-	err = c.Render(ctx, to)
+	metrics := types.Metrics{
+		Timestamp:    now,
+		Deployments:  depls,
+		Statefulsets: statefulsets,
+	}
+
+	result, err := db.Database(r.mongo).
+		Collection(db.CollectionImageTag).
+		InsertOne(ctx, metrics)
 	if err != nil {
 		slog.LogAttrs(
 			ctx,
 			slog.LevelError,
-			"rendering image tag report template",
+			"inserting into mongodb",
+			slog.Time("timestamp", now),
 			slog.String("error", err.Error()),
 		)
-		return fmt.Errorf("rendering image tag report template: %w", err)
+		return fmt.Errorf("inserting into mongodb: %w", err)
 	}
+	slog.LogAttrs(
+		ctx,
+		slog.LevelDebug,
+		"imagetag: inserted document into mongodb",
+		slog.Any("insertedId", result.InsertedID),
+	)
+
+	alerts := report.SoftEvaluateAlerts(ctx, r.conf.Alerts, metrics)
+	result, err = db.
+		Database(r.mongo).
+		Collection(db.CollectionAlerts).
+		InsertOne(ctx, bson.M{
+			"timestamp": now,
+			"from":      db.CollectionImageTag,
+			"alerts":    alerts,
+		})
+	if err != nil {
+		slog.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"imagetag: inserting alerts into mongodb",
+			slog.Time("timestamp", now),
+			slog.String("error", err.Error()),
+		)
+		return fmt.Errorf("inserting alerts into mongodb: %w", err)
+	}
+	slog.LogAttrs(
+		ctx,
+		slog.LevelDebug,
+		"imagetag: inserted alerts into mongodb",
+		slog.Any("insertedId", result.InsertedID),
+	)
 
 	return nil
 }
 
-func (r Reporter) deployments(ctx context.Context) ([]tmpl.Resource, error) {
-	var resources []tmpl.Resource
+func (r Reporter) deployments(ctx context.Context) ([]types.Resource, error) {
+	var resources []types.Resource
 	var cntinue string
 
 	for {
@@ -106,12 +139,18 @@ func (r Reporter) deployments(ctx context.Context) ([]tmpl.Resource, error) {
 		}
 
 		for _, d := range depls.Items {
-			containers := d.Spec.Template.Spec.Containers
-			images := make([]string, len(containers))
+			containers := append(
+				d.Spec.Template.Spec.InitContainers,
+				d.Spec.Template.Spec.Containers...,
+			)
+			images := make([]types.Image, len(containers))
 			for idx, c := range containers {
-				images[idx] = c.Image
+				images[idx] = types.Image{
+					Name:              c.Image,
+					FromInitContainer: idx < len(d.Spec.Template.Spec.InitContainers),
+				}
 			}
-			resources = append(resources, tmpl.Resource{
+			resources = append(resources, types.Resource{
 				Name:      d.GetName(),
 				Namespace: d.GetNamespace(),
 				Images:    images,
@@ -132,8 +171,8 @@ func (r Reporter) deployments(ctx context.Context) ([]tmpl.Resource, error) {
 	return resources, nil
 }
 
-func (r Reporter) statefulsets(ctx context.Context) ([]tmpl.Resource, error) {
-	var resources []tmpl.Resource
+func (r Reporter) statefulsets(ctx context.Context) ([]types.Resource, error) {
+	var resources []types.Resource
 	var cntinue string
 
 	for {
@@ -157,12 +196,18 @@ func (r Reporter) statefulsets(ctx context.Context) ([]tmpl.Resource, error) {
 		}
 
 		for _, s := range ss.Items {
-			containers := s.Spec.Template.Spec.Containers
-			images := make([]string, len(containers))
+			containers := append(
+				s.Spec.Template.Spec.InitContainers,
+				s.Spec.Template.Spec.Containers...,
+			)
+			images := make([]types.Image, len(containers))
 			for idx, c := range containers {
-				images[idx] = c.Image
+				images[idx] = types.Image{
+					Name:              c.Image,
+					FromInitContainer: idx < len(s.Spec.Template.Spec.InitContainers),
+				}
 			}
-			resources = append(resources, tmpl.Resource{
+			resources = append(resources, types.Resource{
 				Name:      s.GetName(),
 				Namespace: s.GetNamespace(),
 				Images:    images,

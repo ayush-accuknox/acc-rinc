@@ -3,18 +3,17 @@ package ceph
 import (
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/url"
 	"time"
 
 	"github.com/accuknox/rinc/internal/conf"
-	"github.com/accuknox/rinc/internal/util"
+	"github.com/accuknox/rinc/internal/db"
+	"github.com/accuknox/rinc/internal/report"
 	types "github.com/accuknox/rinc/types/ceph"
-	tmpl "github.com/accuknox/rinc/view/ceph"
-	"github.com/accuknox/rinc/view/layout"
-	"github.com/accuknox/rinc/view/partial"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -22,21 +21,23 @@ import (
 type Reporter struct {
 	kubeClient *kubernetes.Clientset
 	conf       conf.Ceph
+	mongo      *mongo.Client
 	token      *token
 }
 
 // NewReporter creates a new ceph status reporter.
-func NewReporter(c conf.Ceph, kubeClient *kubernetes.Clientset) Reporter {
+func NewReporter(c conf.Ceph, k *kubernetes.Clientset, mongo *mongo.Client) Reporter {
 	return Reporter{
 		conf:       c,
-		kubeClient: kubeClient,
+		kubeClient: k,
+		mongo:      mongo,
 		token:      nil,
 	}
 }
 
 // Report satisfies the report.Reporter interface by writing the CEPH status
 // and fetched metrics to the provided io.Writer.
-func (r Reporter) Report(ctx context.Context, to io.Writer, now time.Time) error {
+func (r Reporter) Report(ctx context.Context, now time.Time) error {
 	summary := new(types.Summary)
 	err := r.call(ctx, summaryEndpoint, mediaTypeV10, summary)
 	if err != nil {
@@ -128,29 +129,62 @@ func (r Reporter) Report(ctx context.Context, to io.Writer, now time.Time) error
 		return fmt.Errorf("fetching ceph RGW buckets: %w", err)
 	}
 
-	stamp := now.Format(util.IsosecLayout)
-	c := layout.Base(
-		fmt.Sprintf("CEPH - %s | AccuKnox Reports", stamp),
-		partial.Navbar(false, false),
-		tmpl.Report(tmpl.Data{
-			Timestamp:   now,
-			Version:     summary.Version,
-			Status:      *status,
-			Hosts:       hosts,
-			Devices:     devices,
-			Inventories: inventories,
-			Buckets:     buckets,
-		}),
-	)
-	err = c.Render(ctx, to)
+	metrics := types.Metrics{
+		Timestamp:   now,
+		Summary:     *summary,
+		Status:      *status,
+		Buckets:     buckets,
+		Devices:     devices,
+		Hosts:       hosts,
+		Inventories: inventories,
+	}
+
+	result, err := db.
+		Database(r.mongo).
+		Collection(db.CollectionCeph).
+		InsertOne(ctx, metrics)
 	if err != nil {
 		slog.LogAttrs(
 			ctx,
 			slog.LevelError,
-			"rendering ceph template",
+			"ceph: inserting metrics into mongodb",
+			slog.Time("timestamp", now),
 			slog.String("error", err.Error()),
 		)
-		return fmt.Errorf("rendering ceph template: %w", err)
+		return fmt.Errorf("inserting metrics into mongodb: %w", err)
 	}
+	slog.LogAttrs(
+		ctx,
+		slog.LevelDebug,
+		"ceph: inserted metrics into mongodb",
+		slog.Any("insertedId", result.InsertedID),
+	)
+
+	alerts := report.SoftEvaluateAlerts(ctx, r.conf.Alerts, metrics)
+	result, err = db.
+		Database(r.mongo).
+		Collection(db.CollectionAlerts).
+		InsertOne(ctx, bson.M{
+			"timestamp": now,
+			"from":      db.CollectionCeph,
+			"alerts":    alerts,
+		})
+	if err != nil {
+		slog.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"ceph: inserting alerts into mongodb",
+			slog.Time("timestamp", now),
+			slog.String("error", err.Error()),
+		)
+		return fmt.Errorf("inserting alerts into mongodb: %w", err)
+	}
+	slog.LogAttrs(
+		ctx,
+		slog.LevelDebug,
+		"ceph: inserted alerts into mongodb",
+		slog.Any("insertedId", result.InsertedID),
+	)
+
 	return nil
 }
