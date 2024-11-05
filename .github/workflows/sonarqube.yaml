@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+env:
+  AK_URL: "https://cspm.accuknox.com"
+  AK_SAST_LABEL: SAST
+  SQ_PROJECT_KEY: accuknox_rinc_4a78dfc0-bd4e-43df-81d2-6d9221adf880
+
 jobs:
   build:
     name: Build and analyze
@@ -13,7 +18,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@v3.0.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - uses: accuknox/common-gh-actions/actions/sonarqube@eee23079f901642ddcc4e05e57b3a9e16deea000
+        with:
+          host: "https://sq.accuknox.com"
+          token: ${{ secrets.SQ_TOKEN }}
+          qualityGateCheck: 'false'
+          args: >
+            -Dsonar.projectKey=${{ env.SQ_PROJECT_KEY }}
+            -Dsonar.sources=.
+          projectKey: ${{ env.SQ_PROJECT_KEY  }}
+          pushToSaas: true
+          ak_url: ${{ env.AK_URL }}
+          ak_tok: ${{ secrets.AK_PROD_ACCUKNOXTECH_TOKEN }}
+          tenant_id: ${{ secrets.AK_PROD_ACCUKNOXTECH_TENANT_ID }}
+          label: ${{ env.AK_SAST_LABEL }}
