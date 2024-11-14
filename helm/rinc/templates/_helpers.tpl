@@ -80,6 +80,16 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- end }}
 {{- end }}
 
+{{- define "clusterRole.name" -}}
+  {{- if .Values.rbac.clusterRole.fullnameOverride }}
+    {{- .Values.rbac.clusterRole.fullnameOverride | trunc 63 | trimSuffix "-" }}
+  {{- else if .Values.rbac.clusterRole.nameOverride }}
+    {{- printf "%s-%s" .Chart.Name .Values.rbac.clusterRole.nameOverride | trunc 63 | trimSuffix "-" }}
+  {{- else }}
+    {{- .Chart.Name | trunc 63 | trimSuffix "-" }}
+  {{- end }}
+{{- end }}
+
 {{- define "secret.name" -}}
   {{- if .Values.existingSecret.name }}
     {{- .Values.existingSecret.name }}
