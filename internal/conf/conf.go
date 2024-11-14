@@ -42,6 +42,9 @@ type C struct {
 	DaSS DaSS `koanf:"deploymentAndStatefulsetStatus"`
 	// Ceph contains configuration related to the ceph status reporter.
 	Ceph Ceph `koanf:"ceph"`
+	// Connectivity contains configuration related to the connectivity status
+	// reporter.
+	Connectivity Connectivity `koanf:"connectivity"`
 	// PodStatus contains configuration related to the pod status reporter.
 	PodStatus PodStatus `koanf:"podStatus"`
 }
@@ -51,10 +54,11 @@ func New(args ...string) (*C, error) {
 	k := koanf.New(".")
 
 	err := k.Load(confmap.Provider(map[string]any{
-		"log.level":                 "info",
-		"log.format":                "text",
-		"terminationGracePeriod":    time.Second * 10,
-		"longRunningJobs.olderThan": time.Hour * 12,
+		"log.level":                  "info",
+		"log.format":                 "text",
+		"terminationGracePeriod":     time.Second * 10,
+		"longRunningJobs.olderThan":  time.Hour * 12,
+		"connectivity.postgres.port": 5432,
 	}, "."), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default configuration: %w", err)
