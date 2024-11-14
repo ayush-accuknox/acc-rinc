@@ -10,6 +10,7 @@ import (
 	"github.com/accuknox/rinc/types/imagetag"
 	"github.com/accuknox/rinc/types/longjobs"
 	"github.com/accuknox/rinc/types/pod"
+	"github.com/accuknox/rinc/types/pv"
 	"github.com/accuknox/rinc/types/rabbitmq"
 	"github.com/accuknox/rinc/types/resource"
 
@@ -34,6 +35,8 @@ func Generate(target string) ([]byte, error) {
 		schema = r.Reflect(dass.Metrics{})
 	case db.CollectionLongJobs:
 		schema = r.Reflect(longjobs.Metrics{})
+	case db.CollectionPVUtilizaton:
+		schema = r.Reflect(pv.Metrics{})
 	case db.CollectionResourceUtilization:
 		schema = r.Reflect(resource.Metrics{})
 	case db.CollectionConnectivity:

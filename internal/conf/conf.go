@@ -42,6 +42,9 @@ type C struct {
 	DaSS DaSS `koanf:"deploymentAndStatefulsetStatus"`
 	// Ceph contains configuration related to the ceph status reporter.
 	Ceph Ceph `koanf:"ceph"`
+	// PVUtilization contains configuration related to the PV utilization
+	// reporter.
+	PVUtilization PVUtilization `koanf:"pvUtilization"`
 	// ResourceUtilization contains configuration related to the resource
 	// utilization reporter.
 	ResourceUtilization ResourceUtilization `koanf:"resourceUtilization"`

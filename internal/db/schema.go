@@ -28,6 +28,7 @@ const (
 	CollectionImageTag            = "imagetag"
 	CollectionDass                = "dass"
 	CollectionLongJobs            = "longjobs"
+	CollectionPVUtilizaton        = "pv_utilization"
 	CollectionResourceUtilization = "resource_utilization"
 	CollectionConnectivity        = "connectivity"
 	CollectionPodStatus           = "podstatus"
@@ -41,6 +42,7 @@ var Collections = []string{
 	CollectionImageTag,
 	CollectionDass,
 	CollectionLongJobs,
+	CollectionPVUtilizaton,
 	CollectionResourceUtilization,
 	CollectionConnectivity,
 	CollectionPodStatus,
