@@ -1,0 +1,79 @@
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+    - main
+    paths:
+    - .github/workflows/SAST.yml
+name: SAST comparison
+jobs:
+  semgrep-free:
+    name: Semgrep-free
+    runs-on: ubuntu-20.04
+    container:
+      image: returntocorp/semgrep
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        semgrep scan --json --json-output /tmp/semgrep.json
+    - name: View the output
+      run: cat /tmp/semgrep.json
+  
+  semgrep-pro:
+    name: Semgrep-pro
+    runs-on: ubuntu-20.04
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: returntocorp/semgrep
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        semgrep scan --json --json-output /tmp/semgrep.json
+    - name: View the output
+      run: cat /tmp/semgrep.json
+  
+  SonarQube-free:
+    name: SonarQube-free
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+    - uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FREE }}
+        SONAR_HOST_URL: https://sq.accuknox.com
+      with:
+        args: >
+          -Dsonar.projectKey=acc-rinc
+
+  SonarQube-Paid:
+    name: SonarQube-Paid
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+    - uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_PAID }}
+        SONAR_HOST_URL: http://139.59.43.202:9000
+      with:
+        args: >
+          -Dsonar.projectKey=acc-rinc
+
+  Checkmarx:
+    name: Checkmarx
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Checkmarx AST CLI Action
+      uses: checkmarx/ast-github-action@main #Github Action version
+      with:
+        base_uri: https://deu.iam.checkmarx.net/
+        cx_tenant: accuknox-nfr
+        cx_client_id: Ayush
+        cx_client_secret: ${{ secrets.CX_CLIENT_SECRET }}
